@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planillas El Salvador 2026 - Jonathan Alas</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Crimson+Pro:wght@400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Crimson Pro', serif; background-color: #f4ead5; color: #2a1f12; }
+        .font-display { font-family: 'DM Serif Display', serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .card-sh { box-shadow: 4px 4px 0 rgba(26,58,92,0.1); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- CONSTANTES LEGALES SV 2026 ---
+        const ISSS_EMP = 0.03, ISSS_TECHO = 1000;
+        const AFP_EMP = 0.0725, AFP_TECHO = 7028.16;
+
+        // Lógica de Renta (Tramas 2026)
+        const calcRenta = (rg) => {
+            if (rg <= 472) return 0;
+            if (rg <= 895.24) return (rg - 472) * 0.10 + 17.67;
+            if (rg <= 2038.10) return (rg - 895.24) * 0.20 + 60;
+            return (rg - 2038.10) * 0.30 + 288.57;
+        };
+
+        // [Aquí iría todo el JSON de MUNDOS que definimos antes]
+        const MUNDOS = [
+            {
+                id: 'm1', titulo: 'Fundamentos', icono: '📋', color: '#c9a04a',
+                lecciones: [
+                    {
+                        id: 'm1l1', titulo: 'Conceptos Básicos',
+                        pasos: [
+                            { tipo: 'teoria', titulo: 'La Planilla', texto: 'Documento legal que detalla salarios y retenciones.' },
+                            { tipo: 'opcion', pregunta: '¿Cuál es el aporte del empleado al ISSS?', opciones: ['3%', '7.5%', '10%'], correcta: 0, explicacion: 'El empleado aporta el 3%.' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'm2', titulo: 'Cálculos de Ley', icono: '💵', color: '#a83232',
+                lecciones: [
+                    {
+                        id: 'm2l1', titulo: 'ISSS y AFP',
+                        pasos: [
+                            { tipo: 'numerico', pregunta: 'Calcula el ISSS para un sueldo de $1,200 (Recuerda el techo de $1,000).', respuesta: 30, tolerancia: 0, explicacion: 'Sobre el techo de $1,000 el 3% es $30.' }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        function App() {
+            const [pantalla, setPantalla] = useState('mapa');
+            const [completados, setCompletados] = useState({});
+            const [xp, setXp] = useState(0);
+
+            // CARGAR PROGRESO AL INICIAR
+            useEffect(() => {
+                const data = localStorage.getItem('planillas_pro_alas');
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    setCompletados(parsed.completados || {});
+                    setXp(parsed.xp || 0);
+                }
+            }, []);
+
+            // GUARDAR PROGRESO CADA VEZ QUE CAMBIE
+            useEffect(() => {
+                localStorage.setItem('planillas_pro_alas', JSON.stringify({ completados, xp }));
+            }, [completados, xp]);
+
+            const completarLeccion = (id) => {
+                setCompletados(prev => ({ ...prev, [id]: true }));
+                setXp(prev => prev + 50);
+                setPantalla('mapa');
+            };
+
+            if (pantalla === 'mapa') {
+                return (
+                    <div className="max-w-2xl mx-auto p-6">
+                        <header className="text-center mb-10">
+                            <p className="font-mono text-xs tracking-widest text-amber-600 uppercase">Personal Learning System</p>
+                            <h1 className="font-display text-4xl mt-2">Planillas SV <span className="italic text-red-800">2026</span></h1>
+                            <div className="mt-4 flex justify-center gap-4">
+                                <div className="bg-white border border-amber-200 px-4 py-2 rounded card-sh">
+                                    <p className="font-mono text-[10px] uppercase opacity-60">Puntos XP</p>
+                                    <p className="text-2xl font-display text-blue-900">{xp}</p>
+                                </div>
+                            </div>
+                        </header>
+
+                        <div className="space-y-6">
+                            {MUNDOS.map((m) => (
+                                <div key={m.id} className="bg-white p-6 rounded border-l-8 card-sh" style={{borderColor: m.color}}>
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <span className="text-3xl">{m.icono}</span>
+                                        <div>
+                                            <h2 className="font-display text-xl uppercase">{m.titulo}</h2>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {m.lecciones.map(l => (
+                                            <button 
+                                                key={l.id}
+                                                onClick={() => setPantalla(l.id)}
+                                                className={`p-3 text-left border rounded transition-all ${completados[l.id] ? 'bg-green-50 border-green-200' : 'bg-stone-50 hover:bg-white'}`}
+                                            >
+                                                {completados[l.id] ? '✅ ' : '📖 '} {l.titulo}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        
+                        <footer className="mt-12 text-center text-xs italic opacity-50">
+                            Desarrollado para Jonathan Ernesto Flores Alas • San Salvador, 2026
+                        </footer>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="p-10 text-center">
+                    <h2 className="text-2xl mb-4">Simulador de Lección: {pantalla}</h2>
+                    <p className="mb-8 italic">Aquí se carga la lógica de los pasos...</p>
+                    <button 
+                        onClick={() => completarLeccion(pantalla)}
+                        className="bg-blue-900 text-white px-8 py-3 rounded font-mono tracking-tighter"
+                    >
+                        TERMINAR Y GUARDAR AVANCE
+                    </button>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
