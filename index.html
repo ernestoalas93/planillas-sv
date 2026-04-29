@@ -3,151 +3,784 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planillas El Salvador 2026 - Jonathan Alas</title>
+    <title>Curso Planillas El Salvador - Interactivo</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Crimson+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Crimson+Pro:wght@400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Crimson Pro', serif; background-color: #f4ead5; color: #2a1f12; }
-        .font-display { font-family: 'DM Serif Display', serif; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-        .card-sh { box-shadow: 4px 4px 0 rgba(26,58,92,0.1); }
+        body { margin: 0; padding: 0; background: #f4ead5; }
+        /* Estilos base para evitar saltos visuales antes de que cargue React */
+        #root { min-height: 100vh; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useMemo } = React;
 
-        // --- CONSTANTES LEGALES SV 2026 ---
-        const ISSS_EMP = 0.03, ISSS_TECHO = 1000;
-        const AFP_EMP = 0.0725, AFP_TECHO = 7028.16;
+        // ============================================================
+        // HELPERS LEGALES & CONTENIDO (Copiado íntegramente)
+        // ============================================================
+        const ISSS_EMP = 0.03, ISSS_PAT = 0.075, ISSS_TECHO = 1000;
+        const AFP_EMP = 0.0725, AFP_PAT = 0.0875, AFP_TECHO = 7028.16;
 
-        // Lógica de Renta (Tramas 2026)
-        const calcRenta = (rg) => {
+        function calcRenta(rg) {
             if (rg <= 472) return 0;
             if (rg <= 895.24) return (rg - 472) * 0.10 + 17.67;
             if (rg <= 2038.10) return (rg - 895.24) * 0.20 + 60;
             return (rg - 2038.10) * 0.30 + 288.57;
-        };
+        }
 
-        // [Aquí iría todo el JSON de MUNDOS que definimos antes]
         const MUNDOS = [
+            // ============ MUNDO 1 ============
             {
                 id: 'm1', titulo: 'Fundamentos', icono: '📋', color: '#c9a04a',
+                descripcion: 'Qué es una planilla, quiénes la usan, qué grava y qué no.',
                 lecciones: [
-                    {
-                        id: 'm1l1', titulo: 'Conceptos Básicos',
-                        pasos: [
-                            { tipo: 'teoria', titulo: 'La Planilla', texto: 'Documento legal que detalla salarios y retenciones.' },
-                            { tipo: 'opcion', pregunta: '¿Cuál es el aporte del empleado al ISSS?', opciones: ['3%', '7.5%', '10%'], correcta: 0, explicacion: 'El empleado aporta el 3%.' }
-                        ]
-                    }
+                {
+                    id: 'm1l1', titulo: 'Qué es una planilla',
+                    pasos: [
+                    { tipo: 'teoria', titulo: 'La planilla',
+                        texto: 'La planilla es el documento mensual donde se detallan los pagos y descuentos de cada empleado. Es el corazón de la relación legal entre la empresa y el trabajador.' },
+                    { tipo: 'teoria', titulo: 'Los cinco actores',
+                        texto: 'En cada planilla intervienen: el empleado, el patrono, el ISSS (salud), la AFP (pensiones), y el Ministerio de Hacienda (renta). Cada uno tiene un interés distinto y reglas distintas.' },
+                    { tipo: 'teoria', titulo: 'Por qué importa la exactitud',
+                        texto: 'Si te equivocás en planilla afectás el sueldo de una persona y la empresa puede recibir multas del ISSS, AFP, Hacienda o Ministerio de Trabajo. La precisión no es opcional, es legal.' },
+                    { tipo: 'opcion', pregunta: '¿Cuál de estos NO es un actor directo de la planilla?',
+                        opciones: ['ISSS', 'AFP', 'Banco Central de Reserva', 'Ministerio de Hacienda'],
+                        correcta: 2, explicacion: 'El BCR no interviene en planilla. Los actores son empleado, patrono, ISSS, AFP y Hacienda.' },
+                    { tipo: 'vf', pregunta: 'Un error en planilla solo afecta al empleado, no a la empresa.',
+                        correcta: false, explicacion: 'Falso. Un error puede generar multas a la empresa por parte del ISSS, AFP, Hacienda o Mintrab. Y obviamente afecta al empleado.' },
+                    ]
+                },
+                {
+                    id: 'm1l2', titulo: 'Lo que grava y lo que no',
+                    pasos: [
+                    { tipo: 'teoria', titulo: 'Salario gravable',
+                        texto: 'Salario gravable es la base sobre la que se calculan ISSS, AFP y Renta. Son todos los ingresos que la ley considera "salario" en sentido amplio.' },
+                    { tipo: 'teoria', titulo: 'Sí gravan',
+                        texto: 'Gravan: sueldo base, comisiones, horas extra, bonos por desempeño, día séptimo, recargos por trabajo nocturno o festivo, y cualquier pago en dinero por la prestación del servicio.' },
+                    { tipo: 'teoria', titulo: 'No gravan (con condiciones)',
+                        texto: 'NO gravan: viáticos legítimos documentados (alimentación, transporte por trabajo), aguinaldo (no grava ISSS ni AFP), indemnización por despido (exenta de renta hasta tope), y subsidio del ISSS por incapacidad (no grava ISSS/AFP).' },
+                    { tipo: 'opcion', pregunta: '¿Cuál de estos NO grava ISSS?',
+                        opciones: ['Hora extra', 'Comisión por venta', 'Viático de transporte documentado', 'Bono por cumplimiento de meta'],
+                        correcta: 2, explicacion: 'Los viáticos legítimos y documentados no gravan. Todo lo demás sí.' },
+                    { tipo: 'vf', pregunta: 'Un viático fijo mensual sin documentación de gastos puede considerarse salario y gravar.',
+                        correcta: true, explicacion: 'Verdadero. Hacienda lo cuestiona. Si no hay documentación de que el viático cubre un gasto laboral real, lo trata como salario disfrazado.' },
+                    ]
+                },
+                {
+                    id: 'm1l3', titulo: 'El calendario de planilla',
+                    pasos: [
+                    { tipo: 'teoria', titulo: 'El ciclo mensual',
+                        texto: 'Recolección de novedades → cálculo → validación → aprobación → pago al empleado → pago de obligaciones patronales → contabilización. Esto se repite cada mes.' },
+                    { tipo: 'teoria', titulo: 'Fechas clave',
+                        texto: 'ISSS y AFP: pago dentro de los primeros 10 días del mes siguiente. Renta retenida: declaración mensual a Hacienda. Aguinaldo: entre el 12 y 20 de diciembre. Vacaciones: al cumplir cada año del empleado.' },
+                    { tipo: 'opcion', pregunta: '¿Cuándo se paga el ISSS al instituto?',
+                        opciones: ['Mismo día de la planilla', 'Primeros 10 días del mes siguiente', 'A fin del mes siguiente', 'Cuando el empleado lo pida'],
+                        correcta: 1, explicacion: 'Dentro de los primeros 10 días del mes siguiente al período cotizado.' },
+                    { tipo: 'vf', pregunta: 'El aguinaldo se paga en cualquier momento de diciembre o enero.',
+                        correcta: false, explicacion: 'Falso. Por ley se paga entre el 12 y 20 de diciembre. Pagar tarde puede generar reclamo laboral.' },
+                    ]
+                },
                 ]
             },
+
+            // ============ MUNDO 2 ============
             {
-                id: 'm2', titulo: 'Cálculos de Ley', icono: '💵', color: '#a83232',
+                id: 'm2', titulo: 'Descuentos del empleado', icono: '💵', color: '#a83232',
+                descripcion: 'ISSS, AFP y Renta. Los tres descuentos legales que toda planilla tiene.',
                 lecciones: [
-                    {
-                        id: 'm2l1', titulo: 'ISSS y AFP',
-                        pasos: [
-                            { tipo: 'numerico', pregunta: 'Calcula el ISSS para un sueldo de $1,200 (Recuerda el techo de $1,000).', respuesta: 30, tolerancia: 0, explicacion: 'Sobre el techo de $1,000 el 3% es $30.' }
-                        ]
-                    }
+                {
+                    id: 'm2l1', titulo: 'ISSS empleado',
+                    pasos: [
+                    { tipo: 'teoria', titulo: 'Qué es el ISSS',
+                        texto: 'Instituto Salvadoreño del Seguro Social. Cubre atención médica, maternidad, e incapacidad temporal. Es obligatorio.' },
+                    { tipo: 'teoria', titulo: 'Porcentajes',
+                        texto: 'El empleado aporta el 3% de su sueldo. El patrono aporta 7.5%. Total que llega al ISSS: 10.5% del salario.' },
+                    { tipo: 'teoria', titulo: 'El techo de cotización',
+                        texto: 'El techo del ISSS es $1,000. Si el sueldo es mayor, el ISSS se calcula solo sobre $1,000. Por eso alguien que gana $1,500 paga el mismo ISSS que alguien que gana $1,000: $30.', 
+                        ejemplo: 'Sueldo $700 → ISSS = 700 × 3% = $21\nSueldo $1,500 → ISSS = 1,000 × 3% = $30 (techo)' },
+                    { tipo: 'numerico', pregunta: 'María gana $750 al mes. Calculá el ISSS empleado.',
+                        respuesta: 22.50, tolerancia: 0.05,
+                        pista: 'Como $750 está bajo el techo, calculá 3% sobre el sueldo completo.',
+                        explicacion: '750 × 0.03 = $22.50' },
+                    { tipo: 'numerico', pregunta: 'Carlos gana $2,000. ¿Cuánto ISSS le descuentan?',
+                        respuesta: 30, tolerancia: 0.05,
+                        pista: 'Pasa el techo de $1,000. Solo se aplica sobre $1,000.',
+                        explicacion: 'Como pasa el techo: 1,000 × 0.03 = $30. No importa cuánto más gane, su ISSS empleado siempre será $30.' },
+                    ]
+                },
+                {
+                    id: 'm2l2', titulo: 'AFP empleado',
+                    pasos: [
+                    { tipo: 'teoria', titulo: 'Qué es la AFP',
+                        texto: 'Administradora de Fondos de Pensiones. En El Salvador son Confía y Crecer. Cada empleado elige una. La cotización va a su cuenta individual.' },
+                    { tipo: 'teoria', titulo: 'Porcentajes',
+                        texto: 'Empleado aporta 7.25% (incluye cotización + comisión). Patrono aporta 8.75%. Techo: $7,028.16 mensuales.' },
+                    { tipo: 'teoria', titulo: 'En la práctica',
+                        texto: 'Casi nadie llega al techo de AFP. Para la mayoría de empleados, el AFP se calcula sobre el sueldo completo, sin restricción.',
+                        ejemplo: 'Sueldo $500 → AFP = 500 × 7.25% = $36.25\nSueldo $1,200 → AFP = 1,200 × 7.25% = $87.00' },
+                    { tipo: 'numerico', pregunta: 'Sofía gana $650. ¿AFP empleado?',
+                        respuesta: 47.13, tolerancia: 0.05,
+                        explicacion: '650 × 0.0725 = $47.125 ≈ $47.13' },
+                    { tipo: 'numerico', pregunta: 'Roberto gana $1,400. ¿AFP empleado?',
+                        respuesta: 101.50, tolerancia: 0.05,
+                        explicacion: '1,400 × 0.0725 = $101.50. No pasa el techo de $7,028, así que aplica sobre el sueldo completo.' },
+                    ]
+                },
+                {
+                    id: 'm2l3', titulo: 'Renta - tabla de retención',
+                    pasos: [
+                    { tipo: 'teoria', titulo: 'La regla más importante',
+                        texto: 'La Renta NO se calcula sobre el sueldo bruto. Se calcula sobre el sueldo MENOS el ISSS y MENOS el AFP. A esa base se le llama "renta gravada".',
+                        ejemplo: 'Sueldo $800 - ISSS $24 - AFP $58 = Renta gravada $718' },
+                    { tipo: 'teoria', titulo: 'Tramo I y II',
+                        texto: 'Tramo I: hasta $472.00 → no se retiene nada.\n\nTramo II: $472.01 a $895.24 → se aplica 10% sobre el exceso de $472, más $17.67 fijo.' },
+                    { tipo: 'teoria', titulo: 'Tramo III y IV',
+                        texto: 'Tramo III: $895.25 a $2,038.10 → 20% sobre exceso de $895.24 + $60 fijo.\n\nTramo IV: más de $2,038.10 → 30% sobre exceso de $2,038.10 + $288.57 fijo.' },
+                    { tipo: 'opcion', pregunta: '¿Sobre qué base se calcula la Renta?',
+                        opciones: ['Sueldo bruto', 'Sueldo bruto menos ISSS y AFP', 'Solo comisiones', 'Sueldo bruto menos todos los descuentos'],
+                        correcta: 1, explicacion: 'Se calcula sobre la "renta gravada": sueldo bruto menos ISSS y AFP. Solo esos dos seguros se restan antes de aplicar la tabla.' },
+                    { tipo: 'numerico', pregunta: 'Renta gravada de un empleado: $600. ¿Cuánto le retienen de Renta?',
+                        respuesta: 30.47, tolerancia: 0.10,
+                        pista: 'Cae en el Tramo II. Aplicá 10% sobre el exceso de $472, más $17.67.',
+                        explicacion: '(600 - 472) × 0.10 + 17.67 = 12.80 + 17.67 = $30.47' },
+                    { tipo: 'numerico', pregunta: 'Renta gravada $400. ¿Renta retenida?',
+                        respuesta: 0, tolerancia: 0.01,
+                        explicacion: 'Tramo I: hasta $472 no se retiene nada. Cero.' },
+                    ]
+                },
+                {
+                    id: 'm2l4', titulo: 'Tu primer cálculo completo',
+                    pasos: [
+                    { tipo: 'teoria', titulo: 'El orden mental',
+                        texto: 'Siempre seguí este orden: 1) Calculá ISSS empleado. 2) Calculá AFP empleado. 3) Restá ambos del sueldo para obtener renta gravada. 4) Aplicá tabla de Renta. 5) Líquido = sueldo - ISSS - AFP - Renta.' },
+                    { tipo: 'numerico', pregunta: 'Caso: Empleado con sueldo $850. Calculá el ISSS empleado.',
+                        respuesta: 25.50, tolerancia: 0.05,
+                        explicacion: '850 × 0.03 = $25.50 (no pasa el techo)' },
+                    { tipo: 'numerico', pregunta: 'Mismo empleado de $850. Calculá el AFP empleado.',
+                        respuesta: 61.63, tolerancia: 0.05,
+                        explicacion: '850 × 0.0725 = $61.625 ≈ $61.63' },
+                    { tipo: 'numerico', pregunta: 'Mismo empleado. ¿Cuál es la renta gravada?',
+                        respuesta: 762.87, tolerancia: 0.10,
+                        pista: 'Sueldo - ISSS - AFP',
+                        explicacion: '850 - 25.50 - 61.63 = $762.87' },
+                    { tipo: 'numerico', pregunta: 'Mismo empleado. ¿Cuánto le retienen de Renta?',
+                        respuesta: 46.76, tolerancia: 0.15,
+                        pista: 'Renta gravada $762.87 está en Tramo II (entre $472.01 y $895.24).',
+                        explicacion: '(762.87 - 472) × 0.10 + 17.67 = 29.087 + 17.67 = $46.76' },
+                    { tipo: 'numerico', pregunta: 'Líquido a pagar al empleado.',
+                        respuesta: 716.11, tolerancia: 0.20,
+                        explicacion: '850 - 25.50 - 61.63 - 46.76 = $716.11' },
+                    ]
+                },
                 ]
-            }
+            },
+
+            // ============ MUNDO 3 ============
+            {
+                id: 'm3', titulo: 'Aportes patronales', icono: '🏢', color: '#1a3a5c',
+                descripcion: 'Lo que paga la empresa además del salario. El costo real del empleado.',
+                lecciones: [
+                {
+                    id: 'm3l1', titulo: 'Aportes del patrono',
+                    pasos: [
+                    { tipo: 'teoria', titulo: 'Lo que el empleado no ve',
+                        texto: 'Sobre cada empleado la empresa paga aportes adicionales encima del sueldo bruto. El empleado ve su sueldo y descuentos. La empresa paga MÁS de lo que el empleado ve.' },
+                    { tipo: 'teoria', titulo: 'Aportes principales',
+                        texto: 'ISSS patronal: 7.5% (techo $1,000).\nAFP patronal: 8.75% (techo $7,028).\nINSAFORP: 1% sobre planilla mensual (solo empresas con 10+ empleados).' },
+                    { tipo: 'teoria', titulo: 'Provisiones',
+                        texto: 'Además, contablemente la empresa provisiona mes a mes para: aguinaldo (un mes al año), vacaciones (15 días + 30%), e indemnización por despido (riesgo).' },
+                    { tipo: 'vf', pregunta: 'El INSAFORP lo paga el empleado.',
+                        correcta: false, explicacion: 'Falso. INSAFORP lo paga el patrono. Es un fondo para capacitación laboral.' },
+                    { tipo: 'numerico', pregunta: 'Sueldo del empleado: $800. ¿Cuánto paga el patrono de ISSS patronal?',
+                        respuesta: 60, tolerancia: 0.05,
+                        explicacion: '800 × 0.075 = $60. La empresa paga esto AL ISSS, no al empleado.' },
+                    ]
+                },
+                {
+                    id: 'm3l2', titulo: 'Costo total del empleado',
+                    pasos: [
+                    { tipo: 'teoria', titulo: 'Tres números distintos',
+                        texto: 'Sueldo bruto: lo que dice el contrato. Líquido: lo que recibe el empleado en su cuenta. Costo total: lo que la empresa realmente gasta. Los tres son diferentes.' },
+                    { tipo: 'teoria', titulo: 'Aproximación rápida',
+                        texto: 'Como regla: el costo total para la empresa es aproximadamente 130% del sueldo bruto. Es decir, si pagás $1,000 de sueldo, te cuesta cerca de $1,300 en realidad.' },
+                    { tipo: 'numerico', pregunta: 'Sueldo bruto $1,200. Costo total estimado para la empresa (al 30% extra).',
+                        respuesta: 1560, tolerancia: 1,
+                        explicacion: '1,200 × 1.30 = $1,560 aproximadamente' },
+                    { tipo: 'opcion', pregunta: 'Si un gerente te pide "calcular el ahorro de despedir a un empleado", ¿qué número usás?',
+                        opciones: ['El líquido que recibe', 'El sueldo bruto', 'El costo total para la empresa', 'Solo los aportes patronales'],
+                        correcta: 2, explicacion: 'El costo total. Lo que ahorra la empresa es todo lo que dejaría de pagar: bruto + aportes patronales + provisiones.' },
+                    ]
+                },
+                ]
+            },
+
+            // ============ MUNDO 4 ============
+            {
+                id: 'm4', titulo: 'Variables del mes', icono: '⚡', color: '#7c4a8a',
+                descripcion: 'Horas extra, comisiones, bonos y viáticos. Lo que cambia cada mes.',
+                lecciones: [
+                {
+                    id: 'm4l1', titulo: 'Horas extra',
+                    pasos: [
+                    { tipo: 'teoria', titulo: 'La fórmula',
+                        texto: 'Hora extra diurna = hora ordinaria × 2 (recargo del 100%). Hora ordinaria = sueldo mensual / 240 horas (jornada estándar de 8h × 30 días).' },
+                    { tipo: 'teoria', titulo: 'Cuidado con los recargos',
+                        texto: 'Trabajo nocturno tiene recargo adicional del 25%. Día séptimo y asuetos pagan doble. Las horas extra GRAVAN ISSS, AFP y Renta.',
+                        ejemplo: 'Sueldo $480, 10 horas extra diurnas:\nHora ordinaria = 480/240 = $2.00\nHora extra = $4.00\nTotal horas extra = 10 × $4 = $40' },
+                    { tipo: 'numerico', pregunta: 'Empleado con sueldo $720. Hizo 5 horas extra diurnas. ¿Pago por horas extra?',
+                        respuesta: 30, tolerancia: 0.10,
+                        pista: 'Hora ordinaria = 720/240. Hora extra es el doble.',
+                        explicacion: 'Hora ordinaria = 720/240 = $3. Hora extra = $6. Total = 5 × $6 = $30' },
+                    { tipo: 'vf', pregunta: 'Las horas extra no gravan ISSS porque son un pago adicional.',
+                        correcta: false, explicacion: 'Falso. Las horas extra gravan ISSS, AFP y Renta como cualquier otra remuneración.' },
+                    ]
+                },
+                {
+                    id: 'm4l2', titulo: 'Comisiones y bonos',
+                    pasos: [
+                    { tipo: 'teoria', titulo: 'Comisiones',
+                        texto: 'Las comisiones son pago variable según ventas o producción. GRAVAN ISSS, AFP y Renta. Se suman al sueldo base para calcular descuentos.' },
+                    { tipo: 'teoria', titulo: 'Bonos',
+                        texto: 'Bonos por desempeño o producción gravan igual que las comisiones. Bonos especiales por ley o decreto pueden tener tratamiento distinto, pero esos son la excepción.' },
+                    { tipo: 'numerico', pregunta: 'Vendedor con sueldo $500 + comisión $200. ¿Cuál es la base gravable total?',
+                        respuesta: 700, tolerancia: 0.01,
+                        explicacion: '500 + 200 = $700. Sobre eso se aplican ISSS, AFP y Renta.' },
+                    { tipo: 'numerico', pregunta: 'Mismo vendedor ($500 + $200 = $700). ¿AFP empleado?',
+                        respuesta: 50.75, tolerancia: 0.05,
+                        explicacion: '700 × 0.0725 = $50.75' },
+                    ]
+                },
+                {
+                    id: 'm4l3', titulo: 'Viáticos: la zona gris',
+                    pasos: [
+                    { tipo: 'teoria', titulo: 'La regla general',
+                        texto: 'Los viáticos son montos para gastos del empleado en función del trabajo: alimentación, transporte, hospedaje en viajes. Si están documentados y son razonables, NO gravan.' },
+                    { tipo: 'teoria', titulo: 'Cuándo Hacienda los reclasifica',
+                        texto: 'Si el viático es un monto fijo mensual sin documentación, Hacienda puede tratarlo como salario disfrazado y exigir que grave todo. La clave es la documentación y razonabilidad.' },
+                    { tipo: 'opcion', pregunta: '¿Qué hace que un viático sea NO gravable?',
+                        opciones: ['Que sea pequeño', 'Que esté documentado y corresponda a un gasto laboral real', 'Que se pague en efectivo', 'Que el empleado lo justifique verbalmente'],
+                        correcta: 1, explicacion: 'Documentación + razonabilidad + relación con el trabajo. Sin eso, riesgo de reclasificación.' },
+                    { tipo: 'vf', pregunta: 'Un viático de $100 fijo mensual sin recibos podría ser tratado como salario y gravar ISSS, AFP y Renta.',
+                        correcta: true, explicacion: 'Verdadero. Sin documentación es riesgo. La empresa puede recibir multa y ajuste retroactivo.' },
+                    ]
+                },
+                ]
+            },
+
+            // ============ MUNDO 5 ============
+            {
+                id: 'm5', titulo: 'Casos especiales', icono: '🔍', color: '#4a7c4e',
+                descripcion: 'Proporcionales por entrada o salida e incapacidades.',
+                lecciones: [
+                {
+                    id: 'm5l1', titulo: 'Sueldo proporcional',
+                    pasos: [
+                    { tipo: 'teoria', titulo: 'Cuándo aplica',
+                        texto: 'Cuando un empleado entra a mitad de mes, sale a mitad de mes, o no trabaja todo el mes por cualquier razón legítima. Solo se le paga por los días efectivamente trabajados.' },
+                    { tipo: 'teoria', titulo: 'La fórmula',
+                        texto: 'Sueldo proporcional = (sueldo mensual / 30) × días trabajados. Algunos sistemas usan los días reales del mes (28, 30 o 31). Confirmá con el método de tu empresa.',
+                        ejemplo: 'Sueldo $900, trabajó 20 días:\nProporcional = (900/30) × 20 = $30 × 20 = $600' },
+                    { tipo: 'numerico', pregunta: 'Patricia gana $900 mensuales y entró el día 11 (trabajó 20 días). ¿Sueldo proporcional?',
+                        respuesta: 600, tolerancia: 0.50,
+                        explicacion: '(900/30) × 20 = $600' },
+                    { tipo: 'numerico', pregunta: 'Misma Patricia (sueldo proporcional $600). ¿ISSS empleado?',
+                        respuesta: 18, tolerancia: 0.05,
+                        explicacion: '600 × 0.03 = $18. Los descuentos también son proporcionales porque la base es proporcional.' },
+                    ]
+                },
+                {
+                    id: 'm5l2', titulo: 'Incapacidades',
+                    pasos: [
+                    { tipo: 'teoria', titulo: 'Incapacidad común',
+                        texto: 'Enfermedad fuera del trabajo. Días 1 a 3: la empresa paga el 75% del salario diario. Día 4 en adelante: el ISSS paga subsidio (60% del salario diario, con tope), y la empresa NO paga sueldo por esos días.' },
+                    { tipo: 'teoria', titulo: 'Incapacidad por accidente de trabajo',
+                        texto: 'Si el accidente fue en el trabajo, el ISSS cubre desde el día 1. La empresa no paga sueldo durante esos días.' },
+                    { tipo: 'teoria', titulo: 'Tratamiento tributario',
+                        texto: 'El subsidio del ISSS NO grava ISSS ni AFP (el empleado no está cotizando esos días). Sí entra a renta según tratamiento. Lo que paga la empresa los primeros 3 días sí grava todo.' },
+                    { tipo: 'numerico', pregunta: 'Empleado con sueldo $600 tuvo incapacidad común. La empresa cubre días 1-3 al 75%. ¿Cuánto paga la empresa por esos 3 días?',
+                        respuesta: 45, tolerancia: 0.10,
+                        pista: 'Salario diario × 3 días × 75%',
+                        explicacion: '(600/30) × 3 × 0.75 = 20 × 3 × 0.75 = $45' },
+                    { tipo: 'opcion', pregunta: 'Empleado se incapacita 7 días por enfermedad común. ¿Quién paga qué?',
+                        opciones: ['La empresa paga los 7 días al 100%', 'La empresa paga los 7 días al 75%', 'La empresa paga días 1-3 al 75%, ISSS paga días 4-7', 'El ISSS paga los 7 días'],
+                        correcta: 2, explicacion: 'Empresa cubre 1-3 al 75%. Del día 4 en adelante el ISSS paga subsidio directamente al empleado.' },
+                    ]
+                },
+                ]
+            },
+
+            // ============ MUNDO 6 ============
+            {
+                id: 'm6', titulo: 'Prestaciones', icono: '🎁', color: '#c97a4a',
+                descripcion: 'Aguinaldo y vacaciones. Lo que la ley garantiza más allá del sueldo.',
+                lecciones: [
+                {
+                    id: 'm6l1', titulo: 'Aguinaldo',
+                    pasos: [
+                    { tipo: 'teoria', titulo: 'Cuándo y cuánto',
+                        texto: 'El aguinaldo se paga obligatoriamente entre el 12 y 20 de diciembre. El monto depende de la antigüedad del empleado.' },
+                    { tipo: 'teoria', titulo: 'Tabla legal',
+                        texto: 'De 1 a 3 años de antigüedad: 15 días de salario.\nDe 3 a 10 años: 19 días de salario.\nMás de 10 años: 21 días de salario.\n\nMenos de 1 año: proporcional al tiempo trabajado.' },
+                    { tipo: 'teoria', titulo: 'Tratamiento tributario',
+                        texto: 'El aguinaldo NO grava ISSS ni AFP. En Renta está exento hasta el equivalente de dos salarios mínimos. Lo que excede ese monto sí grava Renta.' },
+                    { tipo: 'numerico', pregunta: 'Empleado con 4 años de antigüedad y sueldo $600. ¿Aguinaldo?',
+                        respuesta: 380, tolerancia: 0.50,
+                        pista: '4 años cae en el rango de 3 a 10 años, le tocan 19 días.',
+                        explicacion: '(600/30) × 19 = $20 × 19 = $380' },
+                    { tipo: 'numerico', pregunta: 'Empleada con 12 años de antigüedad y sueldo $900. ¿Aguinaldo?',
+                        respuesta: 630, tolerancia: 0.50,
+                        explicacion: 'Más de 10 años: 21 días. (900/30) × 21 = $30 × 21 = $630' },
+                    ]
+                },
+                {
+                    id: 'm6l2', titulo: 'Vacaciones',
+                    pasos: [
+                    { tipo: 'teoria', titulo: 'La regla básica',
+                        texto: 'Al cumplir un año continuo de trabajo, el empleado tiene derecho a 15 días continuos de vacaciones, pagados con un recargo del 30% sobre el salario de esos 15 días.' },
+                    { tipo: 'teoria', titulo: 'La fórmula',
+                        texto: 'Pago de vacaciones = (salario diario × 15 días) × 1.30.\n\nEs decir: 15 días normales más un 30% extra que es la "prima vacacional".',
+                        ejemplo: 'Sueldo $720:\nDiario = 720/30 = $24\n15 días = $360\nCon recargo 30% = $360 × 1.30 = $468' },
+                    { tipo: 'teoria', titulo: 'Vacaciones proporcionales',
+                        texto: 'Si el empleado sale antes de cumplir el año (renuncia, despido, terminación), se le paga vacaciones proporcionales al tiempo trabajado del último período anual.' },
+                    { tipo: 'numerico', pregunta: 'Empleado con sueldo $720 cumple su año. ¿Cuánto se le paga de vacaciones?',
+                        respuesta: 468, tolerancia: 0.50,
+                        explicacion: '(720/30) × 15 × 1.30 = 24 × 15 × 1.30 = 360 × 1.30 = $468' },
+                    { tipo: 'numerico', pregunta: 'Empleada con sueldo $900 trabajó 6 meses y renuncia. ¿Vacaciones proporcionales?',
+                        respuesta: 234, tolerancia: 1,
+                        pista: '6 meses es la mitad del período anual. Vacaciones completas serían $585. La mitad...',
+                        explicacion: 'Vacaciones completas: (900/30)×15×1.30 = $585. Proporcional 6/12: $585 × 0.5 = $292.50.\n\nTambién se calcula como: (900/30)×15×1.30×(6/12) = $292.50.\n\nNota: la respuesta correcta acá depende del método. Si tu empresa solo paga los días sin recargo cuando es proporcional, sería 24×15×0.5 = $180. La respuesta más aceptada legalmente es $292.50.' },
+                    ]
+                },
+                ]
+            },
+
+            // ============ MUNDO 7 ============
+            {
+                id: 'm7', titulo: 'Finiquitos', icono: '📤', color: '#5a3a8c',
+                descripcion: 'Cuando un empleado se va. Los tres escenarios y cómo se liquidan.',
+                lecciones: [
+                {
+                    id: 'm7l1', titulo: 'Renuncia voluntaria',
+                    pasos: [
+                    { tipo: 'teoria', titulo: 'Qué se paga',
+                        texto: 'En renuncia voluntaria NO hay indemnización. Solo se paga: salario pendiente del último mes, vacaciones proporcionales del período en curso, y aguinaldo proporcional del año en curso.' },
+                    { tipo: 'teoria', titulo: 'Por qué no hay indemnización',
+                        texto: 'La indemnización compensa al empleado cuando es la EMPRESA quien rompe el contrato. Si el empleado decide irse, no hay indemnización porque él tomó la decisión.' },
+                    { tipo: 'teoria', titulo: 'El beneficio especial',
+                        texto: 'Existe un beneficio (Decreto 592 / Ley de Beneficio por Renuncia Voluntaria) que da un monto reducido a empleados con cierta antigüedad. Verificá si tu empresa lo aplica y bajo qué condiciones.' },
+                    { tipo: 'opcion', pregunta: 'Empleado renuncia voluntariamente. ¿Qué SÍ se le paga en finiquito?',
+                        opciones: ['Solo el salario del último mes', 'Salario + indemnización completa', 'Salario + vacaciones proporcionales + aguinaldo proporcional', 'Solo el aguinaldo'],
+                        correcta: 2, explicacion: 'Sueldo pendiente, vacaciones proporcionales y aguinaldo proporcional. NO hay indemnización en renuncia.' },
+                    { tipo: 'vf', pregunta: 'Si renuncia voluntaria, el empleado pierde el derecho a indemnización por años de servicio.',
+                        correcta: true, explicacion: 'Verdadero. La indemnización solo aplica cuando es la empresa quien termina el contrato sin causa legal.' },
+                    ]
+                },
+                {
+                    id: 'm7l2', titulo: 'Despido injustificado',
+                    pasos: [
+                    { tipo: 'teoria', titulo: 'Cuándo aplica',
+                        texto: 'Cuando la empresa termina el contrato sin una causal legal probada. La ley protege al empleado obligando a la empresa a pagar indemnización.' },
+                    { tipo: 'teoria', titulo: 'La fórmula',
+                        texto: 'Indemnización = 30 días de salario por cada año trabajado.\n\nLímite: la base máxima es 4 salarios mínimos. Si el empleado gana más, la indemnización se calcula sobre el tope, no sobre su sueldo real.' },
+                    { tipo: 'teoria', titulo: 'Lo que se suma al finiquito',
+                        texto: 'Además de la indemnización: salario pendiente, vacaciones proporcionales, aguinaldo proporcional, y cualquier otra prestación pendiente. La indemnización está exenta de Renta hasta cierto monto.' },
+                    { tipo: 'numerico', pregunta: 'Empleado con 3 años trabajados, sueldo $700. ¿Indemnización?',
+                        respuesta: 2100, tolerancia: 1,
+                        pista: '30 días de salario por cada año = un sueldo mensual por cada año.',
+                        explicacion: '700 × 3 = $2,100. Un mes de sueldo por cada año trabajado.' },
+                    { tipo: 'numerico', pregunta: 'Empleada con 5 años, sueldo $1,000. ¿Indemnización?',
+                        respuesta: 5000, tolerancia: 1,
+                        explicacion: '1,000 × 5 = $5,000' },
+                    ]
+                },
+                ]
+            },
         ];
 
-        function App() {
+        // ============================================================
+        // COMPONENTE PRINCIPAL (ADAPTADO PARA HTML)
+        // ============================================================
+
+        function CursoPlanillas() {
+            // Persistencia de datos
+            const [completados, setCompletados] = useState(() => {
+                const saved = localStorage.getItem('planillas_completados');
+                return saved ? JSON.parse(saved) : {};
+            });
+            const [xp, setXp] = useState(() => {
+                const saved = localStorage.getItem('planillas_xp');
+                return saved ? parseInt(saved) : 0;
+            });
+
+            useEffect(() => {
+                localStorage.setItem('planillas_completados', JSON.stringify(completados));
+            }, [completados]);
+
+            useEffect(() => {
+                localStorage.setItem('planillas_xp', xp.toString());
+            }, [xp]);
+
             const [pantalla, setPantalla] = useState('mapa');
-            const [completados, setCompletados] = useState({});
-            const [xp, setXp] = useState(0);
+            const [mundoIdx, setMundoIdx] = useState(0);
+            const [leccionIdx, setLeccionIdx] = useState(0);
+            const [pasoIdx, setPasoIdx] = useState(0);
+            const [respuesta, setRespuesta] = useState('');
+            const [opcionSel, setOpcionSel] = useState(null);
+            const [mostrarFeedback, setMostrarFeedback] = useState(false);
+            const [primerIntento, setPrimerIntento] = useState(true);
+            const [mostrarPista, setMostrarPista] = useState(false);
 
-            // CARGAR PROGRESO AL INICIAR
-            useEffect(() => {
-                const data = localStorage.getItem('planillas_pro_alas');
-                if (data) {
-                    const parsed = JSON.parse(data);
-                    setCompletados(parsed.completados || {});
-                    setXp(parsed.xp || 0);
+            const mundo = MUNDOS[mundoIdx];
+            const leccion = mundo?.lecciones[leccionIdx];
+            const paso = leccion?.pasos[pasoIdx];
+
+            const leccionDesbloqueada = (mIdx, lIdx) => {
+                if (mIdx === 0 && lIdx === 0) return true;
+                if (lIdx === 0) {
+                    const mAnt = MUNDOS[mIdx - 1];
+                    const ultLec = mAnt.lecciones[mAnt.lecciones.length - 1];
+                    return completados[ultLec.id];
                 }
-            }, []);
-
-            // GUARDAR PROGRESO CADA VEZ QUE CAMBIE
-            useEffect(() => {
-                localStorage.setItem('planillas_pro_alas', JSON.stringify({ completados, xp }));
-            }, [completados, xp]);
-
-            const completarLeccion = (id) => {
-                setCompletados(prev => ({ ...prev, [id]: true }));
-                setXp(prev => prev + 50);
-                setPantalla('mapa');
+                const lecAnt = MUNDOS[mIdx].lecciones[lIdx - 1];
+                return completados[lecAnt.id];
             };
 
-            if (pantalla === 'mapa') {
-                return (
-                    <div className="max-w-2xl mx-auto p-6">
-                        <header className="text-center mb-10">
-                            <p className="font-mono text-xs tracking-widest text-amber-600 uppercase">Personal Learning System</p>
-                            <h1 className="font-display text-4xl mt-2">Planillas SV <span className="italic text-red-800">2026</span></h1>
-                            <div className="mt-4 flex justify-center gap-4">
-                                <div className="bg-white border border-amber-200 px-4 py-2 rounded card-sh">
-                                    <p className="font-mono text-[10px] uppercase opacity-60">Puntos XP</p>
-                                    <p className="text-2xl font-display text-blue-900">{xp}</p>
-                                </div>
-                            </div>
-                        </header>
+            const mundoCompletado = (m) => m.lecciones.every(l => completados[l.id]);
+            const mundoProgreso = (m) => {
+                const total = m.lecciones.length;
+                const hechos = m.lecciones.filter(l => completados[l.id]).length;
+                return { hechos, total, pct: Math.round((hechos/total)*100) };
+            };
 
-                        <div className="space-y-6">
-                            {MUNDOS.map((m) => (
-                                <div key={m.id} className="bg-white p-6 rounded border-l-8 card-sh" style={{borderColor: m.color}}>
-                                    <div className="flex items-center gap-4 mb-4">
-                                        <span className="text-3xl">{m.icono}</span>
-                                        <div>
-                                            <h2 className="font-display text-xl uppercase">{m.titulo}</h2>
+            const iniciarLeccion = (mIdx, lIdx) => {
+                if (!leccionDesbloqueada(mIdx, lIdx)) return;
+                setMundoIdx(mIdx);
+                setLeccionIdx(lIdx);
+                setPasoIdx(0);
+                setRespuesta('');
+                setOpcionSel(null);
+                setMostrarFeedback(false);
+                setMostrarPista(false);
+                setPrimerIntento(true);
+                setPantalla('leccion');
+            };
+
+            const verificar = () => {
+                if (!paso) return null;
+                if (paso.tipo === 'teoria') return { correcto: true };
+                if (paso.tipo === 'opcion') return { correcto: opcionSel === paso.correcta };
+                if (paso.tipo === 'vf') return { correcto: opcionSel === (paso.correcta ? 1 : 0) };
+                if (paso.tipo === 'numerico') {
+                    const num = parseFloat(respuesta);
+                    if (isNaN(num)) return { correcto: false };
+                    return { correcto: Math.abs(num - paso.respuesta) <= paso.tolerancia };
+                }
+                return null;
+            };
+
+            const handleEnviar = () => {
+                if (paso.tipo === 'teoria') { avanzar(); return; }
+                setMostrarFeedback(true);
+                const res = verificar();
+                if (res?.correcto) {
+                    setXp(x => x + (primerIntento ? 10 : 5));
+                }
+            };
+
+            const avanzar = () => {
+                const esUltimoPaso = pasoIdx === leccion.pasos.length - 1;
+                if (esUltimoPaso) {
+                    setCompletados(c => ({ ...c, [leccion.id]: true }));
+                    setPantalla('completado');
+                } else {
+                    setPasoIdx(pasoIdx + 1);
+                    setRespuesta('');
+                    setOpcionSel(null);
+                    setMostrarFeedback(false);
+                    setMostrarPista(false);
+                    setPrimerIntento(true);
+                }
+            };
+
+            const reintentar = () => {
+                setMostrarFeedback(false);
+                setRespuesta('');
+                setOpcionSel(null);
+                setPrimerIntento(false);
+            };
+
+            // Estilos (Pasados a un objeto literal JS)
+            const S = styles; 
+
+            // Renders
+            if (pantalla === 'mapa') {
+                const totalLecciones = MUNDOS.reduce((a, m) => a + m.lecciones.length, 0);
+                const leccionesHechas = Object.keys(completados).length;
+                const pctTotal = Math.round((leccionesHechas/totalLecciones)*100);
+
+                return (
+                    <div style={S.bg}>
+                        <div style={S.papelTextura}></div>
+                        <div style={S.contenedor}>
+                            <div style={S.headerMapa}>
+                                <div style={S.eyebrow}>CURSO INTERACTIVO</div>
+                                <h1 style={S.tituloPrincipal}>Planillas <em style={S.tituloEm}>El Salvador</em></h1>
+                                <div style={S.subtituloMapa}>De cero a experto. Siete mundos. Veintiún lecciones.</div>
+                            </div>
+                            <div style={S.statsCard}>
+                                <div style={S.stat}><div style={S.statNum}>{xp}</div><div style={S.statLabel}>XP</div></div>
+                                <div style={S.statSep}></div>
+                                <div style={S.stat}><div style={S.statNum}>{leccionesHechas}/{totalLecciones}</div><div style={S.statLabel}>Lecciones</div></div>
+                                <div style={S.statSep}></div>
+                                <div style={S.stat}><div style={S.statNum}>{pctTotal}%</div><div style={S.statLabel}>Avance</div></div>
+                            </div>
+                            <div style={S.mundosLista}>
+                                {MUNDOS.map((m, mIdx) => {
+                                    const prog = mundoProgreso(m);
+                                    const completo = mundoCompletado(m);
+                                    const desbloqueado = mIdx === 0 || mundoCompletado(MUNDOS[mIdx-1]);
+                                    return (
+                                        <div key={m.id} style={{
+                                            ...S.mundoCard,
+                                            borderLeft: `6px solid ${desbloqueado ? m.color : '#bbb'}`,
+                                            opacity: desbloqueado ? 1 : 0.55,
+                                        }}>
+                                            <div style={S.mundoHeader}>
+                                                <div style={{ ...S.mundoIcono, background: desbloqueado ? m.color : '#bbb' }}>
+                                                    {desbloqueado ? m.icono : '🔒'}
+                                                </div>
+                                                <div style={S.mundoInfo}>
+                                                    <div style={S.mundoNumero}>MUNDO {mIdx + 1}</div>
+                                                    <div style={S.mundoTitulo}>{m.titulo}</div>
+                                                    <div style={S.mundoDesc}>{m.descripcion}</div>
+                                                </div>
+                                                {completo && <div style={S.mundoCheck}>✓</div>}
+                                            </div>
+                                            <div style={S.progBarra}>
+                                                <div style={{ ...S.progRelleno, width: `${prog.pct}%`, background: m.color }}></div>
+                                            </div>
+                                            {desbloqueado && (
+                                                <div style={S.leccionesGrid}>
+                                                    {m.lecciones.map((l, lIdx) => {
+                                                        const hecho = completados[l.id];
+                                                        const desbloq = leccionDesbloqueada(mIdx, lIdx);
+                                                        return (
+                                                            <button
+                                                                key={l.id}
+                                                                style={{
+                                                                    ...S.leccionBtn,
+                                                                    background: hecho ? m.color : (desbloq ? '#fffbf0' : '#e8e2d4'),
+                                                                    color: hecho ? '#fff' : (desbloq ? '#1a1a1a' : '#888'),
+                                                                    cursor: desbloq ? 'pointer' : 'not-allowed',
+                                                                    borderColor: hecho ? m.color : (desbloq ? '#c9a04a' : '#bbb'),
+                                                                }}
+                                                                onClick={() => desbloq && iniciarLeccion(mIdx, lIdx)}
+                                                            >
+                                                                <div style={S.leccionNum}>{lIdx + 1}</div>
+                                                                <div style={S.leccionTitulo}>{l.titulo}</div>
+                                                                {hecho && <div style={S.leccionEstrella}>★</div>}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
                                         </div>
-                                    </div>
-                                    <div className="grid grid-cols-1 gap-2">
-                                        {m.lecciones.map(l => (
-                                            <button 
-                                                key={l.id}
-                                                onClick={() => setPantalla(l.id)}
-                                                className={`p-3 text-left border rounded transition-all ${completados[l.id] ? 'bg-green-50 border-green-200' : 'bg-stone-50 hover:bg-white'}`}
-                                            >
-                                                {completados[l.id] ? '✅ ' : '📖 '} {l.titulo}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
+                                    );
+                                })}
+                            </div>
                         </div>
-                        
-                        <footer className="mt-12 text-center text-xs italic opacity-50">
-                            Desarrollado para Jonathan Ernesto Flores Alas • San Salvador, 2026
-                        </footer>
                     </div>
                 );
             }
 
+            if (pantalla === 'completado') {
+                return (
+                    <div style={S.bg}>
+                        <div style={S.papelTextura}></div>
+                        <div style={S.contenedor}>
+                            <div style={S.completadoCard}>
+                                <div style={S.completadoStar}>★</div>
+                                <div style={S.completadoEyebrow}>LECCIÓN COMPLETADA</div>
+                                <h2 style={S.completadoTitulo}>{leccion.titulo}</h2>
+                                <div style={S.completadoMsg}>Otro paso menos antes de tu entrevista de Planillas. La práctica es lo que separa al que sabe del que improvisa.</div>
+                                <div style={S.completadoXp}><div style={S.completadoXpNum}>+{xp}</div><div style={S.completadoXpLabel}>XP totales</div></div>
+                                <button style={S.btnPrincipal} onClick={() => setPantalla('mapa')}>VOLVER AL MAPA</button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const fb = mostrarFeedback ? verificar() : null;
             return (
-                <div className="p-10 text-center">
-                    <h2 className="text-2xl mb-4">Simulador de Lección: {pantalla}</h2>
-                    <p className="mb-8 italic">Aquí se carga la lógica de los pasos...</p>
-                    <button 
-                        onClick={() => completarLeccion(pantalla)}
-                        className="bg-blue-900 text-white px-8 py-3 rounded font-mono tracking-tighter"
-                    >
-                        TERMINAR Y GUARDAR AVANCE
-                    </button>
+                <div style={S.bg}>
+                    <div style={S.papelTextura}></div>
+                    <div style={S.contenedor}>
+                        <div style={S.leccionHeader}>
+                            <button style={S.btnVolver} onClick={() => setPantalla('mapa')}>← Salir</button>
+                            <div style={S.leccionHeaderTitulo}>
+                                <div style={{...S.leccionHeaderMundo, color: mundo.color }}>{mundo.icono} {mundo.titulo.toUpperCase()}</div>
+                                <div style={S.leccionHeaderNombre}>{leccion.titulo}</div>
+                            </div>
+                        </div>
+                        <div style={S.progLeccion}><div style={{ ...S.progLeccionRelleno, width: `${((pasoIdx + (mostrarFeedback?1:0))/leccion.pasos.length)*100}%`, background: mundo.color }}></div></div>
+                        <div style={S.pasoCard}>
+                            {paso.tipo === 'teoria' && (
+                                <>
+                                    <div style={S.pasoEyebrow}>CONCEPTO</div>
+                                    <h2 style={S.pasoTitulo}>{paso.titulo}</h2>
+                                    <div style={S.pasoTexto}>{paso.texto.split('\n\n').map((p, i) => <p key={i} style={S.pasoTextoP}>{p}</p>)}</div>
+                                    {paso.ejemplo && <div style={S.ejemploBox}><div style={S.ejemploLabel}>EJEMPLO</div><pre style={S.ejemploTexto}>{paso.ejemplo}</pre></div>}
+                                </>
+                            )}
+                            {paso.tipo === 'opcion' && (
+                                <>
+                                    <div style={S.pasoEyebrow}>PREGUNTA</div>
+                                    <h2 style={S.pasoPregunta}>{paso.pregunta}</h2>
+                                    <div style={S.opcionesLista}>{paso.opciones.map((op, i) => {
+                                        let style = {...S.opcionBtn};
+                                        if(mostrarFeedback) {
+                                            if(i === paso.correcta) style = {...style, ...S.opcionCorrecta};
+                                            else if(i === opcionSel) style = {...style, ...S.opcionIncorrecta};
+                                        } else if(opcionSel === i) style = {...style, ...S.opcionSeleccionada};
+                                        return (
+                                            <button key={i} style={style} onClick={() => !mostrarFeedback && setOpcionSel(i)}>
+                                                <span style={S.opcionLetra}>{String.fromCharCode(65+i)}</span>
+                                                <span style={S.opcionTexto}>{op}</span>
+                                            </button>
+                                        );
+                                    })}</div>
+                                </>
+                            )}
+                            {paso.tipo === 'vf' && (
+                                <>
+                                    <div style={S.pasoEyebrow}>VERDADERO O FALSO</div>
+                                    <h2 style={S.pasoPregunta}>{paso.pregunta}</h2>
+                                    <div style={S.vfLista}>{[ {idx:1, label:'VERDADERO', val:true}, {idx:0, label:'FALSO', val:false} ].map(({idx, label, val}) => {
+                                        let style = {...S.vfBtn};
+                                        if(mostrarFeedback) {
+                                            if(val === paso.correcta) style = {...style, ...S.opcionCorrecta};
+                                            else if(idx === opcionSel) style = {...style, ...S.opcionIncorrecta};
+                                        } else if(opcionSel === idx) style = {...style, ...S.opcionSeleccionada};
+                                        return <button key={idx} style={style} onClick={() => !mostrarFeedback && setOpcionSel(idx)}>{label}</button>
+                                    })}</div>
+                                </>
+                            )}
+                            {paso.tipo === 'numerico' && (
+                                <>
+                                    <div style={S.pasoEyebrow}>CASO PRÁCTICO</div>
+                                    <h2 style={S.pasoPregunta}>{paso.pregunta}</h2>
+                                    <div style={S.inputWrap}><span style={S.inputDolar}>$</span><input type="number" step="0.01" value={respuesta} onChange={e => setRespuesta(e.target.value)} style={S.inputNum} disabled={mostrarFeedback} placeholder="0.00"/></div>
+                                    {paso.pista && !mostrarFeedback && (
+                                        <div style={S.pistaWrap}>{!mostrarPista ? <button style={S.btnPista} onClick={()=>setMostrarPista(true)}>💡 Necesito una pista</button> : <div style={S.pistaContenido}><strong>Pista:</strong> {paso.pista}</div>}</div>
+                                    )}
+                                </>
+                            )}
+                            {mostrarFeedback && fb && (
+                                <div style={{...S.feedback, background: fb.correcto ? '#e8f3ea' : '#fbeae8', borderColor: fb.correcto ? '#4a7c4e' : '#a83232'}}>
+                                    <div style={{...S.feedbackTitulo, color: fb.correcto ? '#2d5530' : '#7a1f1f'}}>{fb.correcto ? '✓ Correcto' : '✗ No es correcto'}</div>
+                                    {paso.explicacion && <div style={S.feedbackTexto}>{paso.explicacion}</div>}
+                                </div>
+                            )}
+                        </div>
+                        <div style={S.botonera}>
+                            {!mostrarFeedback ? (
+                                <button style={{...S.btnPrincipal, opacity: (paso.tipo === 'teoria' || (paso.tipo === 'numerico' && respuesta) || (paso.tipo !== 'numerico' && opcionSel !== null)) ? 1 : 0.5}} onClick={handleEnviar}>
+                                    {paso.tipo === 'teoria' ? 'ENTENDIDO →' : 'VERIFICAR'}
+                                </button>
+                            ) : (
+                                <>
+                                    {fb && !fb.correcto && paso.tipo !== 'teoria' && <button style={S.btnSecundario} onClick={reintentar}>Reintentar</button>}
+                                    <button style={S.btnPrincipal} onClick={avanzar}>{pasoIdx === leccion.pasos.length - 1 ? 'COMPLETAR LECCIÓN' : 'SIGUIENTE →'}</button>
+                                </>
+                            )}
+                        </div>
+                    </div>
                 </div>
             );
         }
 
+        // ============================================================
+        // ESTILOS (IGUALES A TU PROTOTIPO)
+        // ============================================================
+        const styles = {
+            bg: { minHeight: '100vh', background: '#f4ead5', padding: '1rem', fontFamily: '"Crimson Pro", serif', color: '#2a1f12', position: 'relative' },
+            papelTextura: { position: 'fixed', inset: 0, pointerEvents: 'none', backgroundImage: `radial-gradient(ellipse at top left, rgba(201,160,74,0.08), transparent 50%), repeating-linear-gradient(0deg, transparent 0, transparent 28px, rgba(26,58,92,0.04) 28px, rgba(26,58,92,0.04) 29px)`, zIndex: 0 },
+            contenedor: { maxWidth: '720px', margin: '0 auto', position: 'relative', zIndex: 1 },
+            headerMapa: { textAlign: 'center', marginBottom: '2rem', paddingTop: '1rem' },
+            eyebrow: { fontFamily: '"JetBrains Mono", monospace', fontSize: '0.7rem', letterSpacing: '4px', color: '#c9a04a', marginBottom: '0.8rem', fontWeight: 700 },
+            tituloPrincipal: { fontFamily: '"DM Serif Display", serif', fontSize: '2.4rem', margin: 0, color: '#1a3a5c' },
+            tituloEm: { color: '#a83232', fontStyle: 'italic' },
+            subtituloMapa: { fontSize: '1rem', color: '#5a4a32', marginTop: '0.5rem', fontStyle: 'italic' },
+            statsCard: { background: '#fffbf0', border: '1px solid #c9a04a', borderRadius: '4px', padding: '1rem', display: 'flex', justifyContent: 'space-around', marginBottom: '2rem', boxShadow: '3px 3px 0 rgba(26,58,92,0.1)' },
+            stat: { textAlign: 'center', flex: 1 },
+            statNum: { fontFamily: '"DM Serif Display", serif', fontSize: '1.6rem', color: '#1a3a5c' },
+            statLabel: { fontFamily: '"JetBrains Mono", monospace', fontSize: '0.65rem', letterSpacing: '2px', color: '#5a4a32', marginTop: '0.3rem', textTransform: 'uppercase' },
+            statSep: { width: '1px', height: '36px', background: '#c9a04a', opacity: 0.4 },
+            mundosLista: { display: 'flex', flexDirection: 'column', gap: '1rem' },
+            mundoCard: { background: '#fffbf0', border: '1px solid #d4c9a8', borderRadius: '4px', padding: '1.2rem', boxShadow: '4px 4px 0 rgba(26,58,92,0.08)' },
+            mundoHeader: { display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '0.8rem' },
+            mundoIcono: { width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', color: '#fff', flexShrink: 0 },
+            mundoInfo: { flex: 1 },
+            mundoNumero: { fontFamily: '"JetBrains Mono", monospace', fontSize: '0.7rem', color: '#5a4a32', fontWeight: 700 },
+            mundoTitulo: { fontFamily: '"DM Serif Display", serif', fontSize: '1.4rem', color: '#1a3a5c' },
+            mundoDesc: { fontSize: '0.92rem', color: '#5a4a32' },
+            mundoCheck: { fontSize: '1.5rem', color: '#4a7c4e' },
+            progBarra: { height: '4px', background: '#e8e2d4', borderRadius: '2px', marginBottom: '0.8rem' },
+            progRelleno: { height: '100%', transition: 'width 0.4s' },
+            leccionesGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '0.5rem' },
+            leccionBtn: { border: '2px solid', borderRadius: '4px', padding: '0.7rem', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' },
+            leccionNum: { fontFamily: '"JetBrains Mono", monospace', fontSize: '0.65rem', opacity: 0.7 },
+            leccionTitulo: { fontWeight: 600 },
+            leccionEstrella: { position: 'absolute', top: '4px', right: '6px', color: '#fff' },
+            leccionHeader: { display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' },
+            btnVolver: { background: 'transparent', border: '1px solid #5a4a32', color: '#5a4a32', padding: '0.4rem 0.8rem', cursor: 'pointer' },
+            leccionHeaderMundo: { fontFamily: '"JetBrains Mono", monospace', fontSize: '0.7rem', fontWeight: 700 },
+            leccionHeaderNombre: { fontFamily: '"DM Serif Display", serif', fontSize: '1.3rem', color: '#1a3a5c' },
+            progLeccion: { height: '6px', background: '#e8e2d4', borderRadius: '3px', marginBottom: '1.5rem' },
+            progLeccionRelleno: { height: '100%', transition: 'width 0.4s' },
+            pasoCard: { background: '#fffbf0', border: '1px solid #d4c9a8', borderRadius: '4px', padding: '1.5rem', marginBottom: '1.5rem' },
+            pasoEyebrow: { fontFamily: '"JetBrains Mono", monospace', fontSize: '0.7rem', color: '#a83232', fontWeight: 700, marginBottom: '0.8rem' },
+            pasoTitulo: { fontFamily: '"DM Serif Display", serif', fontSize: '1.6rem', color: '#1a3a5c', marginBottom: '1rem' },
+            pasoTexto: { fontSize: '1rem', lineHeight: 1.6 },
+            pasoTextoP: { marginBottom: '0.8rem' },
+            pasoPregunta: { fontFamily: '"DM Serif Display", serif', fontSize: '1.3rem', color: '#1a3a5c', marginBottom: '1.2rem' },
+            ejemploBox: { background: 'rgba(26,58,92,0.04)', border: '1px dashed #1a3a5c', padding: '0.8rem', marginTop: '1rem' },
+            ejemploLabel: { fontFamily: '"JetBrains Mono", monospace', fontSize: '0.65rem' },
+            ejemploTexto: { fontFamily: '"JetBrains Mono", monospace', fontSize: '0.85rem' },
+            opcionesLista: { display: 'flex', flexDirection: 'column', gap: '0.6rem' },
+            opcionBtn: { display: 'flex', alignItems: 'center', gap: '0.8rem', background: '#fffbf0', border: '2px solid #d4c9a8', padding: '0.9rem', borderRadius: '4px', cursor: 'pointer', fontFamily: 'inherit' },
+            opcionLetra: { background: '#1a3a5c', color: '#fff', width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+            opcionSeleccionada: { borderColor: '#1a3a5c', background: 'rgba(26,58,92,0.08)' },
+            opcionCorrecta: { borderColor: '#4a7c4e', background: '#e8f3ea' },
+            opcionIncorrecta: { borderColor: '#a83232', background: '#fbeae8' },
+            vfLista: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' },
+            vfBtn: { background: '#fffbf0', border: '2px solid #d4c9a8', padding: '1.2rem', fontFamily: '"DM Serif Display", serif', cursor: 'pointer' },
+            inputWrap: { display: 'flex', alignItems: 'center', border: '2px solid #c9a04a', padding: '0.5rem 1rem', borderRadius: '4px' },
+            inputDolar: { fontSize: '1.6rem', color: '#a83232' },
+            inputNum: { flex: 1, border: 'none', background: 'transparent', fontSize: '1.4rem', fontFamily: '"JetBrains Mono", monospace', outline: 'none' },
+            pistaWrap: { marginTop: '0.5rem' },
+            btnPista: { background: 'transparent', border: '1px dashed #c9a04a', cursor: 'pointer', padding: '0.5rem' },
+            pistaContenido: { background: 'rgba(201,160,74,0.12)', padding: '0.8rem', borderRadius: '4px', fontStyle: 'italic' },
+            feedback: { marginTop: '1.5rem', padding: '1rem', border: '2px solid', borderRadius: '4px' },
+            feedbackTitulo: { fontFamily: '"DM Serif Display", serif', fontSize: '1.2rem' },
+            botonera: { display: 'flex', gap: '0.6rem' },
+            btnPrincipal: { flex: 1, background: '#1a3a5c', color: '#fffbf0', border: 'none', padding: '1rem', borderRadius: '4px', cursor: 'pointer', fontWeight: 700, fontFamily: '"JetBrains Mono", monospace' },
+            btnSecundario: { background: 'transparent', border: '2px solid #1a3a5c', padding: '1rem', borderRadius: '4px', cursor: 'pointer' },
+            completadoCard: { background: '#fffbf0', border: '1px solid #c9a04a', padding: '2.5rem', textAlign: 'center', marginTop: '3rem' },
+            completadoStar: { fontSize: '4rem', color: '#c9a04a' },
+            completadoXp: { background: '#1a3a5c', color: '#fffbf0', padding: '1rem', borderRadius: '4px', marginBottom: '1.5rem', display: 'inline-block' },
+            completadoXpNum: { fontSize: '2.2rem', fontFamily: '"DM Serif Display", serif' },
+            completadoXpLabel: { fontSize: '0.7rem', fontFamily: '"JetBrains Mono", monospace' }
+        };
+
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        root.render(<CursoPlanillas />);
     </script>
 </body>
 </html>
